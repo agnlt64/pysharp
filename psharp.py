@@ -1,9 +1,14 @@
 from lexer import Lexer
 from parser import Parser
+from number import Number
 from  errors import Exception
 from _token import Token
-from interpreter import Interpreter
+from interpreter import Interpreter, SymbolTable
 from context import Context
+import sys
+
+global_symbol_table = SymbolTable()
+global_symbol_table.set("nothing", Number(0))
 
 def main(filename: str, text: str) -> Token | Exception:
     lexer = Lexer(filename, text)
@@ -16,6 +21,7 @@ def main(filename: str, text: str) -> Token | Exception:
     
     interperter = Interpreter()
     context = Context("<program>")
+    context.symbol_table = global_symbol_table
     result = interperter.visit(ast.node, context)
     
     return result.value, result.error
@@ -23,6 +29,8 @@ def main(filename: str, text: str) -> Token | Exception:
 def run():
     while True:
         line = input("psharp > ")
+        if line == "exit":
+            sys.exit(0)
         result, error = main("<stdin>", line)
         if error:
             print(error.to_string())

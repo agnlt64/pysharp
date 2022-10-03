@@ -1,3 +1,5 @@
+
+
 class UnaryOperatorNode:
     def __init__(self, operator_token, node):
         self.operator_token = operator_token
@@ -27,3 +29,16 @@ class BinaryOperatorNode:
         
     def __repr__(self) -> str:
         return f"({self.left_node}, {self.operator_token}, {self.right_node})"
+
+class VariableAccessNode:
+    def __init__(self, var_name_token):
+        self.var_name_token = var_name_token
+        self.pos_start = self.var_name_token.pos_start
+        self.pos_end = self.var_name_token.pos_end
+
+class VariableAssignmentNode:
+    def __init__(self, var_name_token, value_node):
+        self.var_name_token = var_name_token
+        self.value_node = value_node
+        self.pos_start = self.var_name_token.pos_start
+        self.pos_end = self.value_node.pos_end

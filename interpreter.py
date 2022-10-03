@@ -1,6 +1,6 @@
 from distutils.log import error
 from number import Number
-from errors import RuntimeResult
+from errors import RuntimeResult, RuntimeError
 from constants import *
 
 class Interpreter:
@@ -52,3 +52,40 @@ class Interpreter:
         if error:
             return res.failure(error)
         return res.success(number.set_pos(node.pos_start, node.pos_end))
+
+    def visit_VariableAccessNode(self, node, context):
+        res = RuntimeResult()
+        var_name = node.var_name_token.value
+        value = context.symbol_table.get(var_name)
+
+        if not value:
+            return res.failure(RuntimeError(node.pos_start, node.pos_end, f"Trying to access variable {var_name} which is undefined", context))
+        value = value.copy().set_pos(node.pos_start, node.pos_end)
+        return res.success(value)
+
+    def visit_VariableAssignmentNode(self, node, context):
+        res = RuntimeResult()
+        var_name = node.var_name_token.value
+        value = res.register(self.visit(node.value_node, context))
+        if res.error: return res
+
+        context.symbol_table.set(var_name, value)
+        return res.success(value)
+
+
+class SymbolTable:
+    def __init__(self):
+        self.symbols = {}
+        self.parent = None
+
+    def get(self, name):
+        value = self.symbols.get(name, None)
+        if value is None and self.parent:
+            return self.parent.get(name)
+        return value
+
+    def set(self, name, value):
+        self.symbols[name] = value
+
+    def remove(self, name):
+        del self.symbols[name]
