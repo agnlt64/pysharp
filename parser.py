@@ -82,7 +82,7 @@ class Parser:
     def expr(self):
         res = ParseResult()
         if self.current_token.matches(TOKEN_KEYWORD, "let"):
-            res.Register(self.next())
+            res.register(self.next())
             if self.current_token != TOKEN_IDENTIFIER:
                 return res.failure(SyntaxError(self.current_token.pos_start, self.current_token.pos_end, "Variable name expected"))
             

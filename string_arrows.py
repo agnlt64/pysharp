@@ -1,4 +1,4 @@
-def string_arrows(text: str, pos_start, pos_end):
+def string_arrows(text: str, pos_start: int, pos_end: int) -> str:
     result = ""
     
     index_start = max(text.rfind("\n", 0, pos_start.index), 0)
