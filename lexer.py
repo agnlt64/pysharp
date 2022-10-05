@@ -1,6 +1,6 @@
-from  _token import Token
+from  pys_token import Token
 from  constants import *
-from  errors import IllegalCharacterException
+from  errors import IllegalCharacterException, ExpectedCharacterError
 from  position import Position
 
 class Lexer:
@@ -21,6 +21,10 @@ class Lexer:
         while self.current_character is not None:
             if self.current_character in " \t":
                 self.next()
+            elif self.current_character in DIGITS:
+                tokens.append(self.make_number())
+            elif self.current_character in LETTERS:
+                tokens.append(self.make_identifier())
             elif self.current_character == "+":
                 tokens.append(Token(TOKEN_PLUS, pos_start=self.position))
                 self.next()
@@ -36,19 +40,22 @@ class Lexer:
             elif self.current_character == "^":
                 tokens.append(Token(TOKEN_POWER, pos_start=self.position))
                 self.next()
-            elif self.current_character == "=":
-                tokens.append(Token(TOKEN_EQUALS, pos_start=self.position))
-                self.next()
             elif self.current_character == "(":
                 tokens.append(Token(TOKEN_LEFT_PARENTHESIS, pos_start=self.position))
                 self.next()
             elif self.current_character == ")":
                 tokens.append(Token(TOKEN_RIGHT_PARENTHESIS, pos_start=self.position))
                 self.next()
-            elif self.current_character in DIGITS:
-                tokens.append(self.make_number())
-            elif self.current_character in LETTERS:
-                tokens.append(self.make_identifier())
+            elif self.current_character == "!":
+                token, error = self.make_not_equals()
+                if error: return [], error
+                tokens.append(token)
+            elif self.current_character == "=":
+                tokens.append(self.make_equals()) # debug here 
+            elif self.current_character == "<":
+                tokens.append(self.make_less_than())
+            elif self.current_character == ">":
+                tokens.append(self.make_greater_than())
             else:
                 pos_start = self.position.copy()
                 char = self.current_character
@@ -86,3 +93,45 @@ class Lexer:
         
         token_type = TOKEN_KEYWORD if id_str in KEYWORDS else TOKEN_IDENTIFIER
         return Token(token_type, id_str, pos_start, self.position)
+
+    def make_not_equals(self):
+        pos_start = self.position.copy()
+        self.next()
+
+        if self.current_character == "=":
+            self.next()
+            return Token(TOKEN_NOT_EQUALS, pos_start=pos_start, pos_end=self.position), None
+        return None, ExpectedCharacterError(pos_start, self.position, "'=' is required after '!'")
+
+    def make_equals(self):
+        token_type = TOKEN_EQUALS
+        pos_start = self.position.copy()
+        self.next()
+
+        if self.current_character == "=":
+            self.next()
+            token_type = TOKEN_EQUALS_EQUALS
+        
+        return Token(token_type, pos_start=pos_start, pos_end=self.position)
+
+    def make_less_than(self):
+        token_type = TOKEN_LESS_THAN
+        pos_start = self.position.copy()
+        self.next()
+
+        if self.current_character == "=":
+            self.next()
+            token_type = TOKEN_LESS_EQUALS
+        
+        return Token(token_type, pos_start=pos_start, pos_end=self.position)
+
+    def make_greater_than(self):
+        token_type = TOKEN_GREATER_THAN
+        pos_start = self.position.copy()
+        self.next()
+
+        if self.current_character == "=":
+            self.next()
+            token_type = TOKEN_GREATER_EQUALS
+        
+        return Token(token_type, pos_start=pos_start, pos_end=self.position)

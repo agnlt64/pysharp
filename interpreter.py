@@ -34,6 +34,22 @@ class Interpreter:
             result, error = left.divided_by(right)
         elif node.operator_token.type == TOKEN_POWER:
             result, error = left.powed_by(right)
+        elif node.operator_token.type == TOKEN_EQUALS_EQUALS:
+            result, error = left.get_comparison_eq(right)
+        elif node.operator_token.type == TOKEN_NOT_EQUALS:
+            result, error = left.get_comparison_ne(right)
+        elif node.operator_token.type == TOKEN_LESS_THAN:
+            result, error = left.get_comparison_lt(right)
+        elif node.operator_token.type == TOKEN_GREATER_THAN:
+            result, error = left.get_comparison_gt(right)
+        elif node.operator_token.type == TOKEN_LESS_EQUALS:
+            result, error = left.get_comparison_lte(right)
+        elif node.operator_token.type == TOKEN_GREATER_EQUALS:
+            result, error = left.get_comparison_gte(right)
+        elif node.operator_token.matches(TOKEN_KEYWORD, "and"):
+            result, error = left.anded_by(right)
+        elif node.operator_token.matches(TOKEN_KEYWORD, "or"):
+            result, error = left.ored_by(right)
         
         if error:
             return res.failure(error)
@@ -47,7 +63,9 @@ class Interpreter:
         error = None
         
         if node.operator_token.type == TOKEN_MINUS:
-            number = number.multed_by(Number(-1))
+            number, error = number.multed_by(Number(-1))
+        elif node.operator_token.type.matches(TOKEN_KEYWORD, "not"):
+            number, error = number.notted()
         
         if error:
             return res.failure(error)

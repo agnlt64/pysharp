@@ -2,13 +2,16 @@ from lexer import Lexer
 from parser import Parser
 from number import Number
 from  errors import Exception
-from _token import Token
+from pys_token import Token
 from interpreter import Interpreter, SymbolTable
 from context import Context
 import sys
 
 global_symbol_table = SymbolTable()
 global_symbol_table.set("nothing", Number(0))
+global_symbol_table.set("true", Number(1))
+global_symbol_table.set("false", Number(0))
+
 
 def main(filename: str, text: str) -> Token | Exception:
     lexer = Lexer(filename, text)

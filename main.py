@@ -1,4 +1,4 @@
-import psharp
+import pysharp
 
 if __name__ == "__main__":
-    psharp.run()
+    pysharp.run()

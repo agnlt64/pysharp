@@ -35,7 +35,7 @@ class Parser:
     def parse(self):
         res = self.expr()
         if not res.error and self.current_token.type != TOKEN_EOF:
-            return res.failure(SyntaxError(self.current_token.pos_start, self.current_token.pos_end, "Expected '+', '-', '*' of '/'"))
+            return res.failure(SyntaxError(self.current_token.pos_start, self.current_token.pos_end, "Expected '+', '-', '*' or '/'"))
         return res
         
     def next(self):
@@ -86,6 +86,26 @@ class Parser:
     
     def term(self):
         return self.binary_operation(self.factor, (TOKEN_MULTIPLY, TOKEN_DIVIDE))
+
+    def arith_expr(self):
+        return self.binary_operation(self.term, (TOKEN_PLUS, TOKEN_MINUS))
+
+    def comp_expr(self):
+        res = ParseResult()
+        if self.current_token.matches(TOKEN_KEYWORD, "not"):
+            operation_token = self.current_token
+            self.next()
+
+            node = res.register(self.comp_expr())
+            if res.error: return res
+            return res.success(UnaryOperatorNode(operator_token, node))
+        
+        node = res.register(self.binary_operation(self.arith_expr, (TOKEN_EQUALS_EQUALS, TOKEN_NOT_EQUALS, TOKEN_LESS_THAN, TOKEN_GREATER_THAN, TOKEN_LESS_EQUALS, TOKEN_GREATER_EQUALS)))
+
+        if res.error:
+            return res.failure(SyntaxError(self.current_token.pos_start, self.current_token.pos_end, "Expected int, float, vriable name, '+', '-', '(', or 'not'"))
+        
+        return res.success(node)
     
     def expr(self):
         res = ParseResult()
@@ -108,7 +128,7 @@ class Parser:
             if res.error: return res
             return res.success(VariableAssignmentNode(var_name, expr))
                 
-        node = res.register(self.binary_operation(self.term, (TOKEN_PLUS, TOKEN_MINUS)))
+        node = res.register(self.binary_operation(self.comp_expr, ((TOKEN_KEYWORD, "and"), (TOKEN_KEYWORD, "or"))))
 
         if res.error:
             return res.failure(SyntaxError(self.current_token.pos_start, self.current_token.pos_end, "Expected 'let', int, float, variable name, '+', '-', or '('"))
@@ -122,7 +142,7 @@ class Parser:
         left = res.register(callback_a())
         if res.error: return res
         
-        while self.current_token.type in operation_tokens:
+        while self.current_token.type in operation_tokens or (self.current_token.type, self.current_token.value) in operation_tokens:
             operator_token = self.current_token
             res.register_next()
             self.next()

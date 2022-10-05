@@ -17,9 +17,21 @@ TOKEN_IDENTIFIER        = "IDENTIFIER"
 TOKEN_KEYWORD           = "KEYWORD"
 TOKEN_EQUALS            = "EQUALS"
 
+# COMPARISON AND OPERATORS
+TOKEN_EQUALS_EQUALS     = "EQUALS_EQUALS"
+TOKEN_NOT_EQUALS        = "NOT_EQUALS"
+TOKEN_LESS_THAN         = "LESS_THAN"
+TOKEN_GREATER_THAN      = "GREATER_THAN"
+TOKEN_LESS_EQUALS       = "LESS_OR_EQUALS"
+TOKEN_GREATER_EQUALS    = "GREATER_OR_EQUALS"
+
 # KEYWORDS
 KEYWORDS = [
-    "let"
+    "let",
+    "const", # not implemented yet
+    "and",
+    "or",
+    "not"
 ]
 
 # DIGITS
