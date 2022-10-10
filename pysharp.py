@@ -37,4 +37,5 @@ def run():
         result, error = main("<stdin>", line)
         if error:
             print(error.to_string())
-        print(result)
+        elif result:
+            print(result)

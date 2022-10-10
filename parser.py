@@ -1,5 +1,5 @@
 from constants import *
-from nodes import NumberNode, BinaryOperatorNode, UnaryOperatorNode, VariableAssignmentNode, VariableAccessNode
+from nodes import NumberNode, BinaryOperatorNode, UnaryOperatorNode, VariableAssignmentNode, VariableAccessNode, IfNode
 from errors import SyntaxError
 
 class ParseResult:
@@ -12,7 +12,7 @@ class ParseResult:
         self.advance_count += 1
 
     def register(self, result):
-        self.advance_count += result.advance_count
+        self.advance_count += result.advance_count  # bug here but idk why, fix later lol
         if result.error: self.error = result.error
         return result.node        
     
@@ -43,7 +43,57 @@ class Parser:
         if self.token_index < len(self.tokens):
             self.current_token = self.tokens[self.token_index]
         return self.current_token
-    
+
+    def if_expr(self):
+        res = ParseResult()
+        cases = []
+        else_case = None
+
+        if not self.current_token.matches(TOKEN_KEYWORD, "if"):
+            return res.failure(SyntaxError(self.current_token.pos_start, self.current_token.pos_end, "'if' expected"))
+
+        res.register_next()
+        self.next()
+
+        condition = res.register(self.expr())
+        if res.error: return res
+
+        if not self.current_token.matches(TOKEN_KEYWORD, "then"):
+            return res.failure(SyntaxError(self.current_token.pos_start, self.current_token.pos_end, "'then' expected"))
+
+        res.register_next()
+        self.next()
+
+        expr = res.register(self.expr())
+        if res.error: return res
+        cases.append((condition, expr))
+
+        while self.current_token.matches(TOKEN_KEYWORD, "elif"):
+            res.register_next()
+            self.next()
+
+            condition = res.register(self.expr())
+            if res.error: return res
+
+            if not self.current_token.matches(TOKEN_KEYWORD, "then"):
+                return res.failure(SyntaxError(self.current_token.pos_start, self.current_token.pos_end, "'then expected"))
+            
+            res.register_next()
+            self.next()
+
+            expr = res.register(self.expr())
+            if res.error: return res
+            cases.append((condition, expr))
+
+            if self.current_token.matches(TOKEN_KEYWORD, "else"):
+                res.register_next()
+                self.next()
+
+                else_case = res.register(self.expr())
+                if res.error: return res
+
+            return res.success(IfNode(cases, else_case))
+
     def atom(self):
         res = ParseResult()
         token = self.current_token
@@ -67,6 +117,11 @@ class Parser:
                 return res.success(expr)
             else:
                 return res.failure(SyntaxError(self.current_token.pos_start, self.current_token.pos_end, "')' expected"))
+        elif token.matches(TOKEN_KEYWORD, "if"):
+            if_expr = res.register(self.if_expr())
+            if res.error: return res
+            return res.success(if_expr)
+
         return res.failure(SyntaxError(token.pos_start, token.pos_end, "Expected int, float, variable name, '+', '-', or '('"))
     
     def power(self):

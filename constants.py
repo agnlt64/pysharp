@@ -31,7 +31,11 @@ KEYWORDS = [
     "const", # not implemented yet
     "and",
     "or",
-    "not"
+    "not",
+    "if",
+    "then",
+    "elif",
+    "else",
 ]
 
 # DIGITS

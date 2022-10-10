@@ -1,0 +1,3 @@
+[submodule "pysharp-cpp"]
+	path = pysharp-cpp
+	url = https://github.com/ABFStudio/pysharp-cpp.git
